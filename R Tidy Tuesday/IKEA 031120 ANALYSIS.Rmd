@@ -1,0 +1,410 @@
+---
+title: "Untitled"
+author: "CW"
+date: "18/08/2021"
+output: html_document
+---
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2020-11-03')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 45)
+```
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(scales)
+library(ggplot2)
+```
+```{r Load}
+
+tt <- tt_load("2020-11-03")
+
+```
+```{r}
+tt$ikea
+```
+```{r}
+ikea <- tt$ikea %>% 
+  select(-X1) %>% 
+  mutate(price_usd = 0.27 * price)
+
+ikea %>% 
+  view
+```
+
+```{r}
+ikea %>% 
+  count(category, sort = TRUE) %>% 
+  mutate(category = fct_reorder(category, n)) %>% 
+  ggplot(aes(n, category)) +
+  geom_col()
+```
+
+```{r}
+ikea %>% 
+  count(category, sort = TRUE) %>% 
+  mutate(category = fct_reorder(category, n)) %>% 
+  ggplot(aes(n, category)) +
+  geom_col() +
+  labs(x = "number of items",
+       y = "",
+       title = "Most Common Categories of IKEA Items")
+```
+
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot()
+```
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  scale_x_log10()
+```
+# up to 6.53 
+# https://www.youtube.com/watch?v=lY0YLDZhT88
+
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  geom_point(aes())+
+  scale_x_log10()
+```
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  geom_jitter(width = 0, height = .5)+
+  scale_x_log10()
+```
+
+
+
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  geom_jitter(width = 0, height = .2)+
+  scale_x_log10()
+```
+
+```{r}
+ikea %>% 
+  mutate(category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10()
+```
+
+```{r}
+library(glue)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10()
+```
+```{r}
+library(glue)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price)) %>% 
+  ggplot(aes(price, category)) +
+  geom_boxplot() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10()
+```
+
+
+```{r}
+library(glue)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category)) +
+  geom_boxplot() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10()
+```
+```{r}
+library(glue)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category)) +
+  geom_boxplot() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+```
+
+
+# up to 11:43
+# https://www.youtube.com/watch?v=lY0YLDZhT88
+
+
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category)) +
+  geom_density_ridges() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+
+```
+
+#below with no log - the above is better as more suited to normal distribution; as some are bimodal better than a box plot
+# but for completeness ahve shown this
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category)) +
+  geom_density_ridges() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+
+```
+
+```{r}
+ikea %>% 
+count(other_colors, sort = TRUE)
+```
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category, fill = other_colors)) +
+  geom_density_ridges() +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+```
+#make transparent
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category, fill = other_colors)) +
+  geom_density_ridges(alpha = .5) +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+```
+
+#other colours more expensive.  therefore predictive model could include that
+#up to 16:47 https://www.youtube.com/watch?v=lY0YLDZhT88
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category, fill = other_colors)) +
+  geom_boxplot() +
+  #geom_density_ridges(alpha = .5) +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+```
+
+If we were building a predictive model, we'd probably include both category and other_colors but also consider volume
+
+
+```{r}
+library(ggridges)
+
+ikea %>% 
+  add_count(category, name = "category_total") %>% 
+  mutate(category = glue("{ category } ({ category_total })"),
+        category = fct_reorder(category, price_usd)) %>% 
+  ggplot(aes(price_usd, category, fill = other_colors)) +
+  geom_density_ridges(alpha = .5) +
+  # geom_jitter(width = 0, height = .1, alpha = .25)+
+  scale_x_log10(labels = dollar) +
+  labs(x = "Price (USD)",
+       y = "",
+       title = "How much do items in each category cost?")
+```
+
+volume
+
+```{r}
+ikea %>% 
+  count(name, sort = TRUE)
+```
+
+```{r}
+ikea %>% 
+  count(name,category, sort = TRUE)
+```
+
+```{r}
+ikea %>% 
+  count(name,category, designer, sort = TRUE)
+```
+
+```{r}
+ikea %>% 
+  count(name,category, designer, sort = TRUE) %>% View()
+```
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, n, sum)) %>% 
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col()
+```
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, n, sum)) %>% 
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col()
+```
+
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  filter(name != "Other") %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, n, sum)) %>% 
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col()
+```
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  filter(name != "Other") %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, n, sum), 
+         category = fct_reorder(category, n, sum)) %>%
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col() +
+  labs(x = "# of items",
+       y = "Name of item")
+```
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  filter(name != "Other") %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, -n, sum), 
+         category = fct_reorder(category, n, sum)) %>%
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col() +
+  labs(x = "# of items",
+       y = "Name of item")
+```
+
+note can put negative sign in to flip the order like above
+
+```{r}
+ikea %>% 
+  mutate(name = fct_lump(name, 20)) %>% 
+  filter(name != "Other") %>% 
+  count(name,category, sort = TRUE) %>% 
+  mutate(name = fct_reorder(name, n, sum), 
+         category = fct_reorder(category, n, sum)) %>%
+  ggplot(aes(n, name, fill = category, )) +
+  geom_col() +
+  scale_fill_discrete(guide = guide_legend(reverse = TRUE)) +
+  labs(x = "# of items",
+       y = "Name of item")
+```
+
+
+```{r}
+ikea %>% 
+  View
+```
+
+short description has text then at times numbers after the comma although not all the time,
+
+```{r}
+ikea %>% count(short_description, sort = TRUE) %>% View()
+```
+
+```{r}
+ikea %>% 
+  select(short_description)
+```
+
+```{r}
+ikea <- tt$ikea %>% 
+  select(-X1) %>% 
+  mutate(price_usd = 0.27 * price, 
+        short_description = str_trim(str_replace_all(short_description, "\\s+", " ")))
+
+```
+
+```{r}
+ikea %>% 
+  select(short_description) %>% 
+  separate(short_description, c("main_description", "rest"),
+           sep = ", ", 
+           extra = "merge", 
+           fill = "right") %>% 
+  extract(rest, "numbers", "([\\d\\-xX]+) cm", remove = FALSE) %>% 
+  View()
+```
+
+
+https://www.youtube.com/watch?v=lY0YLDZhT88 up to 27:52

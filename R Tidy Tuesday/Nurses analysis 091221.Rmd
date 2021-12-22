@@ -1,0 +1,398 @@
+---
+title: "Analyzing regsitered nurses in R"
+author: "Chris Weatherburn"
+date: "09/12/2021"
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+---
+```{r}
+setwd("D:/Chris/Documents/R work/R Tidy Tuesday")
+```
+
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(ggthemes)
+```
+
+```{r}
+tt <- tidytuesdayR::tt_load('2021-10-05')
+tt$nurses
+```
+
+#column names not in snake case convert so can analyse them
+
+```{r}
+library(scales)
+library(janitor)
+library(tidyverse)
+theme_set(theme_light())
+```
+
+```{r}
+tt$nurses %>% 
+  clean_names() %>% 
+  View()
+```
+
+```{r}
+nurses <- tt$nurses %>% 
+  clean_names()
+```
+
+```{r}
+nurses %>% 
+  count(state)
+```
+
+```{r}
+nurses %>% 
+  count(state)
+```
+
+
+```{r}
+nurses %>% 
+  count(year, wt = total_employed_rn) %>% 
+  ggplot(aes(year, n)) +
+  geom_col()
+```
+
+```{r}
+nurses %>% 
+  count(year, wt = total_employed_rn) %>% 
+  ggplot(aes(year, n)) +
+  geom_col() +
+  labs( y = '# of registered nurses nationally')
+```
+
+```{r}
+nurses %>% 
+  filter(state == "New York") %>% 
+  ggplot(aes(year, total_employed_rn)) +
+  geom_col()
+```
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line()
+```
+
+
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line() +
+  expand_limits(y = 0)
+
+```
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "# of employed registered nurses")
+
+```
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "# of employed registered nurses")
+
+```
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "# of employed registered nurses")
+  scale_y_continuous(labels = comma_format())
+
+```
+
+#below in theory adds a . in the y axis label
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania")) %>% 
+  ggplot(aes(year, total_employed_rn, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "# of employed registered nurses")
+scale_y_continuous(labels = comma_format(big.mark = "."))
+
+```
+
+
+
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania")) %>% 
+  ggplot(aes(year, hourly_wage_median, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "Hourly wage") +
+scale_y_continuous(labels = dollar_format())
+
+```
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania", "Michigan", "Florida")) %>% 
+  ggplot(aes(year, hourly_wage_median, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "Hourly wage") +
+scale_y_continuous(labels = dollar_format())
+
+```
+#note below adds the .00 to the dollar format on y axis
+
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania", "Michigan", "Florida")) %>% 
+  ggplot(aes(year, hourly_wage_median, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "Hourly wage") +
+scale_y_continuous(labels = dollar_format(accuracy = 0.01))
+
+```
+
+```{r}
+nurses %>% 
+  filter(!is.na(hourly_wage_avg)) %>% 
+  group_by(year) %>% 
+  summarize(weighted_avg_wage = sum(hourly_wage_avg * total_employed_rn) / 
+sum(total_employed_rn)) %>% 
+  ggplot(aes(year, weighted_avg_wage)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  scale_y_continuous(labels = dollar_format())
+
+
+```
+
+#note gap in data
+
+```{r}
+nurses %>% 
+  filter(!is.na(hourly_wage_avg)) %>% 
+  group_by(year) %>% 
+  summarize(weighted_avg_wage = sum(hourly_wage_avg * total_employed_rn) / 
+sum(total_employed_rn)) %>% 
+  filter(!is.na(weighted_avg_wage)) %>% 
+  ggplot(aes(year, weighted_avg_wage)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  scale_y_continuous(labels = dollar_format())
+```
+```{r}
+nurses %>% 
+  filter(!is.na(hourly_wage_avg)) %>% 
+  group_by(year) %>% 
+  summarize(weighted_avg_wage = sum(hourly_wage_avg * total_employed_rn) / 
+sum(total_employed_rn)) %>% 
+  filter(!is.na(weighted_avg_wage)) %>% 
+  ggplot(aes(year, weighted_avg_wage)) +
+  geom_line() +
+  geom_point() +
+  expand_limits(y = 0) +
+  scale_y_continuous(labels = dollar_format())
+```
+```{r}
+nurses %>% 
+  filter(state %in% c("New York", "California", "Texas", "Pennsylvania", "Michigan", "Florida", "Ohio", "Washington")) %>% 
+  ggplot(aes(year, hourly_wage_median, color = state)) +
+  geom_line() +
+  expand_limits(y = 0) +
+  labs(y = "Hourly wage") +
+scale_y_continuous(labels = dollar_format())
+
+```
+
+#looking at change in hourly wages over time
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point()
+
+
+```
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point() +
+  geom_label(aes(label = state), vjust = 1, hjust = 1, check_overlap = TRUE)
+
+
+```
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point() +
+  geom_text(aes(label = state), vjust = 1, hjust = 1, check_overlap = TRUE)
+
+```
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point(aes(size = total_employed_rn_2000)) +
+  geom_text(aes(label = state), vjust = 1, hjust = 1, check_overlap = TRUE)
+
+```
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point(aes(size = total_employed_rn_2000)) +
+  geom_text(aes(label = state), vjust = 1, hjust = 1, check_overlap = TRUE) +
+  scale_x_continuous(labels = percent_format()) +
+  scale_y_continuous(labels = percent_format())
+  
+
+```
+
+
+```{r}
+nurses %>% 
+  filter(year %in% c(2000, 2020)) %>% 
+  select(state, year, total_employed_rn, hourly_wage_median) %>% 
+  pivot_wider(names_from = year, values_from = c(total_employed_rn, hourly_wage_median)) %>% 
+  mutate(rn_increase = total_employed_rn_2020 / total_employed_rn_2000 - 1, 
+         wage_increase = hourly_wage_median_2020 / hourly_wage_median_2000 -1) %>% 
+  ggplot(aes(rn_increase, wage_increase, size = total_employed_rn_2000)) +
+  geom_point(aes(size = total_employed_rn_2000)) +
+  geom_text(aes(label = state), vjust = 1, hjust = 1, check_overlap = TRUE) +
+  scale_x_continuous(labels = percent_format()) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "% increase in # of registered nurses, 2000 to 2020",
+       y = "% increase in hourly wage, 2000-2020",
+       size = "# nurses 2000")
+  
+
+```
+
+#note california increase - but not compared with change in population itself
+
+
+# up to 18:53 
+https://www.youtube.com/watch?v=UVmxHb2Daeo
+
+
+
+#make a choropleth and then shiny app (choropleth is a colured map)
+
+```{r}
+map_data("state") %>% 
+  as_tibble()
+```
+
+
+```{r}
+nurses %>% 
+  filter(year == 2020) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  inner_join(map_data("state"), by = c(state = "region")) %>% 
+  ggplot(aes(long, lat, group = group)) +
+  geom_polygon()
+
+```
+
+
+
+
+```{r}
+nurses %>% 
+  filter(year == 2020) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  inner_join(map_data("state"), by = c(state = "region")) %>% 
+  ggplot(aes(long, lat, group = group)) +
+  geom_polygon() +
+  coord_map() +
+  ggthemes::theme_map()
+```
+
+```{r}
+nurses %>% 
+  filter(year == 2020) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  inner_join(map_data("state"), by = c(state = "region")) %>% 
+  ggplot(aes(long, lat, group = group, fill = hourly_wage_median)) +
+  geom_polygon() +
+  coord_map() +
+  ggthemes::theme_map()
+```
+
+```{r}
+nurses %>% 
+  filter(year == 2020) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  inner_join(map_data("state"), by = c(state = "region")) %>% 
+  ggplot(aes(long, lat, group = group, fill = hourly_wage_median)) +
+  geom_polygon() +
+  coord_map() +
+  scale_fill_viridis_c(labels = dollar_format()) +
+  ggthemes::theme_map() +
+  labs(title = "Hourly wage of registered nurses by state, 2020", fill = "Median wage")
+
+```
+If want to know more aobut the map data this would explore it
+
+
+?map_data
+
+
+#below is how to interrogate other maps such as ns one
+
+```{r}
+map_data("nz") %>%  as_tibble() %>% count(region, sort = TRUE)
+```
+
+#making a shinyapp
+# up to 28:58 shinyapp didn't work
+
+
